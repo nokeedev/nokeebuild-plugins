@@ -1,0 +1,48 @@
+plugins {
+	id 'maven-publish'
+}
+
+publishing {
+	publications.withType(MavenPublication).all {
+		pom {
+			name = provider { "${groupId}:${artifactId}" }
+			description = provider { project.description }
+			inceptionYear = '2025' // TODO: Auto detect (oldest commit time
+
+			// TODO: Auto detect (based on git)
+			url = 'https://github.com/nokeedev/nokee-companion'
+			scm {
+				connection = 'scm:git:git://github.com/nokeedev/nokee-companion.git'
+				developerConnection = 'scm:git:ssh://github.com:nokeedev/nokee-companion.git'
+				url = 'http://github.com/nokeedev/nokee-companion/tree/main'
+			}
+
+			developers {
+				developer {
+					name = 'Daniel Lacasse'
+					id = 'lacasseio'
+				}
+			}
+			licenses {
+				// TODO: AUTO DETECT (look for LICENSE)
+				license {
+					name = 'Apache License, Version 2.0'
+					url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+				}
+			}
+		}
+	}
+}
+
+pluginManager.withPlugin('java-gradle-plugin') {
+	pluginManager.apply('com.gradle.plugin-publish')
+
+	afterEvaluate {
+		publishing.publications.withType(MavenPublication) {
+			pom {
+				name = provider { "${groupId}:${artifactId}" }
+				description = provider { project.description }
+			}
+		}
+	}
+}

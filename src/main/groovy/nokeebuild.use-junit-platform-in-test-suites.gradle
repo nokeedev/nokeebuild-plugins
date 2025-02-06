@@ -1,0 +1,25 @@
+pluginManager.withPlugin('jvm-test-suite') {
+	testing.suites.withType(JvmTestSuite).configureEach {
+		// versionCatalogs -> VersionCatalogsExtension
+		//   each elements are VersionCatalog
+		Set<String> junitJupiterVersions = new LinkedHashSet<>(versionCatalogs.collectMany {
+			return it.findVersion('junit-jupiter').map { [it] }.orElse([])
+		})
+
+		// TODO: Account for version in gradle.properties
+		if (junitJupiterVersions.empty) {
+			useJUnitJupiter('latest.release')
+		} else if (junitJupiterVersions.size() == 1) {
+			useJUnitJupiter(junitJupiterVersions.first())
+		} else {
+			throw new RuntimeException("mutliple JUnit versions founds: ${junitJupiterVersions}")
+		}
+
+		// Configure default tempdir cleanup
+		targets.all {
+			testTask.configure {
+				systemProperty 'junit.jupiter.tempdir.cleanup.mode.default', 'ON_SUCCESS'
+			}
+		}
+	}
+}
