@@ -10,7 +10,7 @@ pluginManager.withPlugin('jvm-test-suite') {
 		if (junitJupiterVersions.empty) {
 			useJUnitJupiter('latest.release')
 		} else if (junitJupiterVersions.size() == 1) {
-			useJUnitJupiter(junitJupiterVersions.first())
+			useJUnitJupiter(junitJupiterVersions.first().toString())
 		} else {
 			throw new RuntimeException("mutliple JUnit versions founds: ${junitJupiterVersions}")
 		}
