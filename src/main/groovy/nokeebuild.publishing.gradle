@@ -2,19 +2,32 @@ plugins {
 	id 'maven-publish'
 }
 
+Provider<String> slugProvider = providers.exec { commandLine('git', 'config', '--get', 'remote.origin.url') }
+	.standardOutput.asText.map { url ->
+		url = url.trim()
+		if (url.startsWith('git@github.com')) {
+			return url.substring(15) - '.git'
+		} else if (url.startsWith('https://github.com')) {
+			return url.substring(19) - '.git'
+		}
+		throw new UnsupportedOperationException()
+	}
+
+Provider<String> headBranchProvider = providers.exec { commandLine('git', 'remote', 'show', 'origin') }
+	.standardOutput.asText.map { it.readLines().find { it.startsWith('  HEAD branch:') }.substring(15).trim() }
+
 publishing {
 	publications.withType(MavenPublication).all {
 		pom {
 			name = provider { "${groupId}:${artifactId}" }
 			description = provider { project.description }
-			inceptionYear = '2025' // TODO: Auto detect (oldest commit time
+			inceptionYear = providers.exec {commandLine('git', 'log', '--reverse', '-1', '--pretty=format:%ad', '--date=format:%Y')}.standardOutput.asText
 
-			// TODO: Auto detect (based on git)
-			url = 'https://github.com/nokeedev/nokee-companion'
+			url = slugProvider.map { "https://github.com/${it}" }
 			scm {
-				connection = 'scm:git:git://github.com/nokeedev/nokee-companion.git'
-				developerConnection = 'scm:git:ssh://github.com:nokeedev/nokee-companion.git'
-				url = 'http://github.com/nokeedev/nokee-companion/tree/main'
+				connection = slugProvider.map { slug -> "scm:git:git://github.com/${slug}.git" }
+				developerConnection = slugProvider.map { slug -> "scm:git:ssh://github.com:${slug}.git" }
+				url = slugProvider.zip(headBranchProvider) { slug, head -> "https://github.com/${slug}/tree/${head}" }
 			}
 
 			developers {
