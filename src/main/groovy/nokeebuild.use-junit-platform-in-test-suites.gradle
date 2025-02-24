@@ -21,5 +21,14 @@ pluginManager.withPlugin('jvm-test-suite') {
 				systemProperty 'junit.jupiter.tempdir.cleanup.mode.default', 'ON_SUCCESS'
 			}
 		}
+
+		// See https://github.com/gradle/gradle/issues/18647
+		if (name == 'test') {
+			targets.all {
+				testTask.configure {
+					jvmArgs('--add-opens=java.base/java.lang=ALL-UNNAMED')
+				}
+			}
+		}
 	}
 }
