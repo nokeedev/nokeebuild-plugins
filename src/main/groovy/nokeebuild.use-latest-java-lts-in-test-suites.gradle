@@ -10,3 +10,16 @@ pluginManager.withPlugin('jvm-test-suite') {
 		}
 	}
 }
+
+pluginManager.withPlugin('java-test-fixtures') {
+	sourceSets.named('testFixtures') {
+		tasks.named(compileJavaTaskName, JavaCompile) {
+			javaCompiler = javaToolchains.compilerFor {
+				languageVersion = JavaLanguageVersion.of(17)
+			}
+			options.release = 17
+			sourceCompatibility = JavaVersion.VERSION_17
+			targetCompatibility = JavaVersion.VERSION_17
+		}
+	}
+}
