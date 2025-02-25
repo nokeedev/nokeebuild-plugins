@@ -1,0 +1,31 @@
+plugins {
+	id 'com.gradle.develocity'
+}
+
+develocity {
+	System.getProperty('gradle.enterprise.url')?.with { serverUrl ->
+		server = serverUrl
+		// rely on develocity/key.properties
+	}
+	System.getenv('DEVELOCITY_ACCESS_KEY')?.with {
+		def (serverUrl, key) = it.split('=')
+		server = "https://${serverUrl}"
+		accessKey = key
+	}
+
+	// Always publish, use --no-scan to avoid
+	buildScan { publishing.onlyIf { true } }
+
+	buildScan { if (gradle.startParameter.buildCacheEnabled) { tag('CACHED') } }
+
+	buildScan {
+		capture {
+			fileFingerprints = Boolean.parseBoolean(System.getProperty('scan.capture-file-fingerprints', 'false'))
+		}
+	}
+
+	buildScan {
+		termsOfUseUrl = 'https://gradle.com/help/legal-terms-of-use'
+		termsOfUseAgree = System.getProperty('gradle.enterprise.agreePublicBuildScanTermOfService', 'no')
+	}
+}
