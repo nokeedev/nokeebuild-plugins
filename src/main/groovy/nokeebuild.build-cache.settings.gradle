@@ -1,0 +1,21 @@
+import java.util.Optional
+
+pluginManager.withPlugin("com.gradle.develocity") {
+	develocity {
+		buildScan { if (gradle.startParameter.buildCacheEnabled) { tag('CACHED') } }
+	}
+}
+
+buildCache {
+	local {
+		enabled = true
+	}
+	remote(HttpBuildCache) {
+		url = System.getProperty('gradle.cache.remote.url', Optional.ofNullable(System.getProperty('gradle.enterprise.url')).map { "$it/cache" }.orElse(null))
+		credentials {
+			username = System.getProperty('gradle.cache.remote.username')
+			password = System.getProperty('gradle.cache.remote.password')
+		}
+		push = Boolean.parseBoolean(System.getProperty('gradle.cache.remote.push')) && credentials.username != null && credentials.password != null
+	}
+}

@@ -16,8 +16,6 @@ develocity {
 	// Always publish, use --no-scan to avoid
 	buildScan { publishing.onlyIf { true } }
 
-	buildScan { if (gradle.startParameter.buildCacheEnabled) { tag('CACHED') } }
-
 	buildScan {
 		capture {
 			fileFingerprints = Boolean.parseBoolean(System.getProperty('scan.capture-file-fingerprints', 'false'))
