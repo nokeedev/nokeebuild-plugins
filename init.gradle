@@ -1,0 +1,40 @@
+abstract class MyPlugin implements Plugin<Settings> {
+	@javax.inject.Inject
+	abstract ExecOperations getExecOperations()
+
+	@Override
+	void apply(Settings settings) {
+		def uri = 'https://github.com/nokeedev/nokeebuild-plugins'
+		def repoHash = uri.bytes.digest('SHA-1')
+		def repoCacheDir = new File(settings.settingsDir, ".gradle/nokee-vcs/${repoHash}")
+		if (!repoCacheDir.exists()) {
+			execOperations.exec { spec ->
+				spec.commandLine("git", "clone", "--depth", "1", "--filter=blob:none")
+				spec.args(uri, repoCacheDir)
+			}
+		}
+
+		execOperations.exec { spec ->
+			spec.commandLine("git", "-C", repoCacheDir, "fetch", "--depth", "1", "--filter=blob:none")
+			spec.args("origin")
+		}
+
+		execOperations.exec { spec ->
+			spec.commandLine("git", "-C", repoCacheDir, "reset", "--hard", "origin/HEAD")
+		}
+
+		settings.pluginManagement.with {
+			includeBuild repoCacheDir.absolutePath
+		}
+	}
+}
+
+apply plugin: MyPlugin
+
+//def execOperations = objects.newInstance(ServiceProvider).execOperations
+
+//exec {}
+
+//pluginManagement.with {
+//	objects.
+//}
