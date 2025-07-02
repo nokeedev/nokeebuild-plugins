@@ -1,7 +1,7 @@
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
-import org.gradle.api.Project;
 import org.gradle.api.initialization.Settings;
+import org.gradle.api.invocation.Gradle;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.process.ExecOperations;
@@ -22,7 +22,13 @@ import java.security.NoSuchAlgorithmException;
 	@Override
 	public void apply(Settings settings) {
 		// TODO: Use project cache on start parameter instead.
-		settings.getExtensions().create("sourceControlManagement", SourceControlManagementExtension.class, settings, settings.getSettingsDir().toPath().resolve(".gradle/nokee-vcs"));
+		Gradle gradle = settings.getGradle();
+		while (gradle.getParent() != null) {
+			gradle = gradle.getParent();
+		}
+
+		Path vcsCacheDir = gradle.getStartParameter().getProjectCacheDir().toPath().resolve("nokee-vcs");
+		settings.getExtensions().create("sourceControlManagement", SourceControlManagementExtension.class, settings, vcsCacheDir);
 	}
 
 	public static class SourceControlManagementExtension {
