@@ -1,3 +1,4 @@
+import org.gradle.StartParameter;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.initialization.Settings;
@@ -7,12 +8,14 @@ import org.gradle.api.provider.Property;
 import org.gradle.process.ExecOperations;
 
 import javax.inject.Inject;
+import java.io.File;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 
 /*private*/ abstract /*final*/ class SourceControlManagementPlugin implements Plugin<Settings> {
 	@Inject
@@ -27,7 +30,8 @@ import java.security.NoSuchAlgorithmException;
 			gradle = gradle.getParent();
 		}
 
-		Path vcsCacheDir = gradle.getStartParameter().getProjectCacheDir().toPath().resolve("nokee-vcs");
+		StartParameter rootBuildParameter = gradle.getStartParameter();
+		Path vcsCacheDir = Optional.ofNullable(rootBuildParameter.getProjectCacheDir()).orElseGet(() -> new File(rootBuildParameter.getProjectDir(), ".gradle")).toPath().resolve("nokee-vcs");
 		settings.getExtensions().create("sourceControlManagement", SourceControlManagementExtension.class, settings, vcsCacheDir);
 	}
 
