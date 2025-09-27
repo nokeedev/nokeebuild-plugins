@@ -22,6 +22,14 @@ pluginManager.withPlugin('jvm-test-suite') {
 			}
 		}
 
+		// If we use @TestDirectory annotation, configure temp test directory under $buildDir/tmp
+		targets.all {
+			testTask.configure {
+				def testTempDirectory = layout.buildDirectory.dir('tmp')
+				jvmArgumentProviders.add({ ["-Ddev.nokee.commons.fixtures.test-directory.base-dir=${testTempDirectory.get().asFile.absolutePath}"] } as CommandLineArgumentProvider)
+			}
+		}
+
 		// See https://github.com/gradle/gradle/issues/18647
 		if (name == 'test') {
 			targets.all {
