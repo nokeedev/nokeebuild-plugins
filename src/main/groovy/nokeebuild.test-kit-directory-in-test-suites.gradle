@@ -2,7 +2,7 @@ pluginManager.withPlugin('jvm-test-suite') {
 	testing.suites.withType(JvmTestSuite).configureEach {
 		targets.all {
 			testTask.configure {
-				Provider<Directory> testKitDirectory = project.getLayout().getBuildDirectory().dir('gradle-runner-kit')
+				Provider<Directory> testKitDirectory = layout.buildDirectory.dir('gradle-runner-kit')
 				jvmArgumentProviders.add({ ["-Dorg.gradle.testkit.dir=${testKitDirectory.get().asFile.absolutePath}"] } as CommandLineArgumentProvider)
 			}
 		}
