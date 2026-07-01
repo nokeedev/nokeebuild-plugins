@@ -24,7 +24,6 @@ import java.util.Optional;
 
 	@Override
 	public void apply(Settings settings) {
-		// TODO: Use project cache on start parameter instead.
 		Gradle gradle = settings.getGradle();
 		while (gradle.getParent() != null) {
 			gradle = gradle.getParent();
