@@ -3,6 +3,8 @@ import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.initialization.Settings;
 import org.gradle.api.invocation.Gradle;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.process.ExecOperations;
@@ -35,6 +37,7 @@ import java.util.Optional;
 	}
 
 	public static class SourceControlManagementExtension {
+		private static final Logger LOGGER = Logging.getLogger(SourceControlManagementExtension.class);
 		private final Settings settings;
 		private final Path vcsCacheDir;
 		private final ExecOperations execOperations;
@@ -87,6 +90,7 @@ import java.util.Optional;
 			}
 
 			if (!Files.exists(repoCacheDir)) throw new RuntimeException(String.format("Repo at '%s' was not checked out correctly.", repoCacheDir));
+			else LOGGER.info(String.format("Repo '%s' cloned at '%s'", uri, repoCacheDir));
 			settings.includeBuild(repoCacheDir.toString());
 		}
 
