@@ -86,6 +86,7 @@ import java.util.Optional;
 				});
 			}
 
+			if (!Files.exists(repoCacheDir)) throw new RuntimeException(String.format("Repo at '%s' was not checked out correctly.", repoCacheDir));
 			settings.includeBuild(repoCacheDir.toString());
 		}
 
