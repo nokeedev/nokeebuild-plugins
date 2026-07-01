@@ -49,6 +49,7 @@ import java.util.Optional;
 			this.vcsCacheDir = vcsCacheDir;
 			this.execOperations = execOperations;
 			this.objects = objects;
+			LOGGER.info(String.format("Using '%s' as VCS cache directory.", vcsCacheDir));
 		}
 
 		public void gitRepository(URI uri) {
