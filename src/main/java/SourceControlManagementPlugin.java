@@ -32,7 +32,8 @@ import java.util.Optional;
 		}
 
 		StartParameter rootBuildParameter = gradle.getStartParameter();
-		Path vcsCacheDir = Optional.ofNullable(rootBuildParameter.getProjectCacheDir()).orElseGet(() -> new File(rootBuildParameter.getProjectDir(), ".gradle")).toPath().resolve("nokee-vcs");
+		System.out.println("ROOT Build project dir " + rootBuildParameter.getProjectDir());
+		Path vcsCacheDir = Optional.ofNullable(rootBuildParameter.getProjectCacheDir()).map(File::getAbsoluteFile).orElseGet(() -> new File(rootBuildParameter.getProjectDir(), ".gradle")).toPath().resolve("nokee-vcs");
 		settings.getExtensions().create("sourceControlManagement", SourceControlManagementExtension.class, settings, vcsCacheDir);
 	}
 
