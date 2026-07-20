@@ -33,20 +33,23 @@ import java.util.Optional;
 
 		StartParameter rootBuildParameter = gradle.getStartParameter();
 		Path vcsCacheDir = Optional.ofNullable(rootBuildParameter.getProjectCacheDir()).map(File::getAbsoluteFile).orElseGet(() -> new File(rootBuildParameter.getCurrentDir(), ".gradle")).toPath().resolve("nokee-vcs");
-		settings.getExtensions().create("sourceControlManagement", SourceControlManagementExtension.class, settings, vcsCacheDir);
+		boolean offline = rootBuildParameter.isOffline();
+		settings.getExtensions().create("sourceControlManagement", SourceControlManagementExtension.class, settings, vcsCacheDir, offline);
 	}
 
 	public static class SourceControlManagementExtension {
 		private static final Logger LOGGER = Logging.getLogger(SourceControlManagementExtension.class);
 		private final Settings settings;
 		private final Path vcsCacheDir;
+		private final boolean offline;
 		private final ExecOperations execOperations;
 		private final ObjectFactory objects;
 
 		@Inject
-		public SourceControlManagementExtension(Settings settings, Path vcsCacheDir, ExecOperations execOperations, ObjectFactory objects) {
+		public SourceControlManagementExtension(Settings settings, Path vcsCacheDir, boolean offline, ExecOperations execOperations, ObjectFactory objects) {
 			this.settings = settings;
 			this.vcsCacheDir = vcsCacheDir;
+			this.offline = offline;
 			this.execOperations = execOperations;
 			this.objects = objects;
 			LOGGER.info(String.format("Using '%s' as VCS cache directory.", vcsCacheDir));
@@ -62,32 +65,34 @@ import java.util.Optional;
 			boolean submodule = git.getSubmodule().getOrElse(false);
 
 			Path repoCacheDir = vcsCacheDir.resolve(hash(uri));
-			if (!Files.exists(repoCacheDir)) {
-				execOperations.exec(spec -> {
-					spec.commandLine("git", "clone", "--depth", "1", "--filter=blob:none");
-					if (submodule) {
-						spec.args("--recurse-submodules", "--shallow-submodules");
-					}
-					spec.args(uri, repoCacheDir);
-				});
-			}
-
-			execOperations.exec(spec -> {
-				spec.commandLine("git", "-C", repoCacheDir, "fetch", "--depth", "1", "--filter=blob:none");
-				if (submodule) {
-					spec.args("--recurse-submodules");
+			if (!offline) {
+				if (!Files.exists(repoCacheDir)) {
+					execOperations.exec(spec -> {
+						spec.commandLine("git", "clone", "--depth", "1", "--filter=blob:none");
+						if (submodule) {
+							spec.args("--recurse-submodules", "--shallow-submodules");
+						}
+						spec.args(uri, repoCacheDir);
+					});
 				}
-				spec.args("origin");
-			});
 
-			execOperations.exec(spec -> {
-				spec.commandLine("git", "-C", repoCacheDir, "reset", "--hard", "origin/HEAD");
-			});
-
-			if (submodule) {
 				execOperations.exec(spec -> {
-					spec.commandLine("git", "-C", repoCacheDir, "submodule", "update", "--init", "--recursive", "--depth", "1");
+					spec.commandLine("git", "-C", repoCacheDir, "fetch", "--depth", "1", "--filter=blob:none");
+					if (submodule) {
+						spec.args("--recurse-submodules");
+					}
+					spec.args("origin");
 				});
+
+				execOperations.exec(spec -> {
+					spec.commandLine("git", "-C", repoCacheDir, "reset", "--hard", "origin/HEAD");
+				});
+
+				if (submodule) {
+					execOperations.exec(spec -> {
+						spec.commandLine("git", "-C", repoCacheDir, "submodule", "update", "--init", "--recursive", "--depth", "1");
+					});
+				}
 			}
 
 			if (!Files.exists(repoCacheDir)) throw new RuntimeException(String.format("Repo at '%s' was not checked out correctly.", repoCacheDir));
