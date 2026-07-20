@@ -5,10 +5,13 @@ plugins {
 develocity {
 	projectId = 'nokeedev'
 
+	// TODO: Once we receive the password, we can change the server
 	System.getProperty('gradle.enterprise.url')?.with { serverUrl ->
 		server = serverUrl
 		// rely on develocity/key.properties
 	}
+//	server = 'https://community.develocity.cloud/'
+
 	System.getenv('DEVELOCITY_ACCESS_KEY')?.with {
 		def (serverUrl, key) = it.split('=')
 		server = "https://${serverUrl}"
