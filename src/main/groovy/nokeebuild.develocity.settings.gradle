@@ -3,6 +3,8 @@ plugins {
 }
 
 develocity {
+	projectId = 'nokeedev'
+
 	System.getProperty('gradle.enterprise.url')?.with { serverUrl ->
 		server = serverUrl
 		// rely on develocity/key.properties
