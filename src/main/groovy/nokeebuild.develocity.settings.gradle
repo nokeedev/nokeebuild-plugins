@@ -10,12 +10,6 @@ develocity {
 		// rely on develocity/key.properties
 	}
 
-	System.getenv('DEVELOCITY_ACCESS_KEY')?.with {
-		def (serverUrl, key) = it.split('=')
-		server = "https://${serverUrl}"
-		accessKey = key
-	}
-
 	// Always publish, use --no-scan to avoid
 	buildScan { publishing.onlyIf { true } }
 
