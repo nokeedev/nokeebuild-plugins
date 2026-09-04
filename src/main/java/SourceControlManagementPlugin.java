@@ -20,6 +20,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
 /*private*/ abstract /*final*/ class SourceControlManagementPlugin implements Plugin<Settings> {
+	private static final Logger LOGGER = Logging.getLogger(SourceControlManagementPlugin.class);
+
 	@Inject
 	public SourceControlManagementPlugin() {
 	}
@@ -34,6 +36,7 @@ import java.util.Optional;
 		StartParameter rootBuildParameter = gradle.getStartParameter();
 		Path vcsCacheDir = Optional.ofNullable(rootBuildParameter.getProjectCacheDir()).map(File::getAbsoluteFile).orElseGet(() -> new File(rootBuildParameter.getCurrentDir(), ".gradle")).toPath().resolve("nokee-vcs");
 		boolean offline = rootBuildParameter.isOffline();
+		LOGGER.info("project at '" + settings.getSettingsDir() + " use VCS cache at '" + vcsCacheDir + "'");
 		settings.getExtensions().create("sourceControlManagement", SourceControlManagementExtension.class, settings, vcsCacheDir, offline);
 	}
 
