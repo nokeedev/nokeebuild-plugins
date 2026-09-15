@@ -79,22 +79,26 @@ import java.util.Optional;
 					});
 				}
 
-				execOperations.exec(spec -> {
-					spec.commandLine("git", "-C", repoCacheDir, "fetch", "--depth", "1", "--filter=blob:none");
-					if (submodule) {
-						spec.args("--recurse-submodules");
-					}
-					spec.args("origin");
-				});
-
-				execOperations.exec(spec -> {
-					spec.commandLine("git", "-C", repoCacheDir, "reset", "--hard", "origin/HEAD");
-				});
-
-				if (submodule) {
+				try {
 					execOperations.exec(spec -> {
-						spec.commandLine("git", "-C", repoCacheDir, "submodule", "update", "--init", "--recursive", "--depth", "1");
+						spec.commandLine("git", "-C", repoCacheDir, "fetch", "--depth", "1", "--filter=blob:none");
+						if (submodule) {
+							spec.args("--recurse-submodules");
+						}
+						spec.args("origin");
 					});
+
+					execOperations.exec(spec -> {
+						spec.commandLine("git", "-C", repoCacheDir, "reset", "--hard", "origin/HEAD");
+					});
+
+					if (submodule) {
+						execOperations.exec(spec -> {
+							spec.commandLine("git", "-C", repoCacheDir, "submodule", "update", "--init", "--recursive", "--depth", "1");
+						});
+					}
+				} catch (RuntimeException ex) {
+					LOGGER.warn("Ignoring git commands", ex);
 				}
 			}
 

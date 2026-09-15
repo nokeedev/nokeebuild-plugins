@@ -15,13 +15,18 @@ abstract class MyPlugin implements Plugin<Settings> {
 				}
 			}
 
-			execOperations.exec { spec ->
-				spec.commandLine("git", "-C", repoCacheDir, "fetch", "--depth", "1", "--filter=blob:none")
-				spec.args("origin")
-			}
+			try {
+				execOperations.exec { spec ->
+					spec.commandLine("git", "-C", repoCacheDir, "fetch", "--depth", "1", "--filter=blob:none")
+					spec.args("origin")
+				}
 
-			execOperations.exec { spec ->
-				spec.commandLine("git", "-C", repoCacheDir, "reset", "--hard", "origin/HEAD")
+				execOperations.exec { spec ->
+					spec.commandLine("git", "-C", repoCacheDir, "reset", "--hard", "origin/HEAD")
+				}
+			} catch (RuntimeException ex) {
+				System.out.println("Ignoring Git commands")
+				ex.printStackTrace()
 			}
 		}
 
